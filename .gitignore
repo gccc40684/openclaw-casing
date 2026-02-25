@@ -15,6 +15,7 @@ __pycache__/
 .DS_Store
 **/.DS_Store
 ui/src/ui/__screenshots__/
+ui/src/ui/public/fanclaw.yaml
 ui/playwright-report/
 ui/test-results/
 packages/dashboard-next/.next/

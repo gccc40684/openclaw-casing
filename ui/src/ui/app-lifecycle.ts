@@ -48,6 +48,13 @@ export function handleConnected(host: LifecycleHost) {
   syncThemeWithSettings(host as unknown as Parameters<typeof syncThemeWithSettings>[0]);
   attachThemeListener(host as unknown as Parameters<typeof attachThemeListener>[0]);
   window.addEventListener("popstate", host.popStateHandler);
+
+  // Initialize FanClaw authentication
+  const fanclawHost = host as unknown as { initFanClaw: () => Promise<void> };
+  if (typeof fanclawHost.initFanClaw === "function") {
+    void fanclawHost.initFanClaw();
+  }
+
   connectGateway(host as unknown as Parameters<typeof connectGateway>[0]);
   startNodesPolling(host as unknown as Parameters<typeof startNodesPolling>[0]);
   if (host.tab === "logs") {

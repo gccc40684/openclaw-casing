@@ -21,6 +21,16 @@ import {
 } from "./app-chat.ts";
 import { DEFAULT_CRON_FORM, DEFAULT_LOG_LEVEL_FILTERS } from "./app-defaults.ts";
 import type { EventLogEntry } from "./app-events.ts";
+import {
+  initFanClaw,
+  handleFanClawUsernameChange,
+  handleFanClawPasswordChange,
+  handleFanClawLogin,
+  handleFanClawLogout,
+  navigateToDashboard,
+  navigateToFanChat,
+  handleFanChatSessionKeyChange,
+} from "./app-fanclaw.ts";
 import { connectGateway as connectGatewayInternal } from "./app-gateway.ts";
 import {
   handleConnected,
@@ -58,6 +68,7 @@ import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
 import type { SkillMessage } from "./controllers/skills.ts";
+import type { FanClawConfig } from "./fanclaw-auth.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
@@ -389,6 +400,17 @@ export class OpenClawApp extends LitElement {
   private themeMediaHandler: ((event: MediaQueryListEvent) => void) | null = null;
   private topbarObserver: ResizeObserver | null = null;
 
+  // FanClaw authentication state
+  @state() fanclawLoginUsername = "";
+  @state() fanclawLoginPassword = "";
+  @state() fanclawLoginError: string | null = null;
+  @state() fanclawLoginLoading = false;
+  @state() fanclawCaptchaType: "canvas" | "none" = "canvas";
+  @state() fanclawCaptchaResetNonce = 0;
+  @state() fanclawConfig: FanClawConfig | null = null;
+  @state() fanclawRequiresLogin = false;
+  @state() fanclawInitialized = false;
+
   createRenderRoot() {
     return this;
   }
@@ -608,6 +630,39 @@ export class OpenClawApp extends LitElement {
     const newRatio = Math.max(0.4, Math.min(0.7, ratio));
     this.splitRatio = newRatio;
     this.applySettings({ ...this.settings, splitRatio: newRatio });
+  }
+
+  // FanClaw authentication methods
+  async initFanClaw() {
+    await initFanClaw(this);
+  }
+
+  handleFanClawUsernameChange(value: string) {
+    handleFanClawUsernameChange(this, value);
+  }
+
+  handleFanClawPasswordChange(value: string) {
+    handleFanClawPasswordChange(this, value);
+  }
+
+  async handleFanClawLogin() {
+    await handleFanClawLogin(this);
+  }
+
+  async handleFanClawLogout() {
+    await handleFanClawLogout(this);
+  }
+
+  navigateToDashboard() {
+    navigateToDashboard(this);
+  }
+
+  navigateToFanChat() {
+    navigateToFanChat(this);
+  }
+
+  handleFanChatSessionKeyChange(next: string) {
+    handleFanChatSessionKeyChange(this, next);
   }
 
   render() {

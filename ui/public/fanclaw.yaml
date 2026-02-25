@@ -1,0 +1,32 @@
+# FanClaw 配置文件
+# 用于配置登录验证和 OpenClaw 连接
+
+# 登录配置
+auth:
+  # 登录用户名
+  username: admin
+  # 登录密码（建议使用强密码）
+  password: fanclaw123
+  # 会话有效期（小时）
+  sessionDuration: 72
+
+# OpenClaw 网关配置
+gateway:
+  # 网关连接 Token
+  token: your-openclaw-gateway-token-here
+  # 网关 URL（可选，默认使用当前主机）
+  url: ""
+
+# 验证码配置
+captcha:
+  # 验证码类型: "canvas" | "none"
+  # - canvas: 使用 Canvas 图形验证码（纯前端，无需外部服务）★推荐
+  # - none: 不使用验证码
+  type: canvas
+
+# 开发环境配置
+development:
+  # 本地开发地址列表（这些地址将跳过登录）
+  localHosts:
+    - "127.0.0.1"
+    - "localhost"

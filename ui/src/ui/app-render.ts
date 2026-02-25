@@ -72,6 +72,8 @@ import { renderConfig } from "./views/config.ts";
 import { renderCron } from "./views/cron.ts";
 import { renderDebug } from "./views/debug.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
+import { renderFanChat } from "./views/fanchat.ts";
+import { renderFanClawLogin } from "./views/fanclaw-login.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
 import { renderInstances } from "./views/instances.ts";
 import { renderLogs } from "./views/logs.ts";
@@ -215,8 +217,10 @@ export function renderApp(state: AppViewState) {
       ? rawDeliveryToSuggestions.filter((value) => isHttpUrl(value))
       : rawDeliveryToSuggestions;
 
+  const isFanChat = state.tab === "fanchat";
+
   return html`
-    <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} ${state.settings.navCollapsed ? "shell--nav-collapsed" : ""} ${state.onboarding ? "shell--onboarding" : ""}">
+    <div class="shell ${isChat ? "shell--chat" : ""} ${isFanChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} ${state.settings.navCollapsed ? "shell--nav-collapsed" : ""} ${state.onboarding ? "shell--onboarding" : ""} ${isFanChat ? "shell--chat-focus" : ""}">
       <header class="topbar">
         <div class="topbar-left">
           <button
@@ -1048,6 +1052,103 @@ export function renderApp(state: AppViewState) {
                 assistantName: state.assistantName,
                 assistantAvatar: state.assistantAvatar,
               })
+            : nothing
+        }
+
+        ${
+          state.tab === "fanchat"
+            ? (state as unknown as { fanclawRequiresLogin: boolean }).fanclawRequiresLogin
+              ? renderFanClawLogin({
+                  username: (state as unknown as { fanclawLoginUsername: string })
+                    .fanclawLoginUsername,
+                  password: (state as unknown as { fanclawLoginPassword: string })
+                    .fanclawLoginPassword,
+                  error: (state as unknown as { fanclawLoginError: string | null })
+                    .fanclawLoginError,
+                  loading: (state as unknown as { fanclawLoginLoading: boolean })
+                    .fanclawLoginLoading,
+                  captchaType: (state as unknown as { fanclawCaptchaType: "canvas" | "none" })
+                    .fanclawCaptchaType,
+                  captchaResetNonce: (state as unknown as { fanclawCaptchaResetNonce: number })
+                    .fanclawCaptchaResetNonce,
+                  onUsernameChange: (value: string) =>
+                    (
+                      state as unknown as { handleFanClawUsernameChange: (value: string) => void }
+                    ).handleFanClawUsernameChange(value),
+                  onPasswordChange: (value: string) =>
+                    (
+                      state as unknown as { handleFanClawPasswordChange: (value: string) => void }
+                    ).handleFanClawPasswordChange(value),
+                  onSubmit: () =>
+                    void (
+                      state as unknown as { handleFanClawLogin: () => Promise<void> }
+                    ).handleFanClawLogin(),
+                })
+              : renderFanChat({
+                  sessionKey: state.sessionKey,
+                  onSessionKeyChange: (next: string) =>
+                    (
+                      state as unknown as { handleFanChatSessionKeyChange: (next: string) => void }
+                    ).handleFanChatSessionKeyChange(next),
+                  thinkingLevel: state.chatThinkingLevel,
+                  showThinking,
+                  loading: state.chatLoading,
+                  sending: state.chatSending,
+                  compactionStatus: state.compactionStatus,
+                  fallbackStatus: state.fallbackStatus,
+                  assistantAvatarUrl: chatAvatarUrl,
+                  messages: state.chatMessages,
+                  toolMessages: state.chatToolMessages,
+                  stream: state.chatStream,
+                  streamStartedAt: state.chatStreamStartedAt,
+                  draft: state.chatMessage,
+                  queue: state.chatQueue,
+                  connected: state.connected,
+                  canSend: state.connected,
+                  disabledReason: chatDisabledReason,
+                  error: state.lastError,
+                  sessions: state.sessionsResult,
+                  focusMode: chatFocus,
+                  onRefresh: () => {
+                    state.resetToolStream();
+                    return Promise.all([loadChatHistory(state), refreshChatAvatar(state)]);
+                  },
+                  onToggleFocusMode: () => {
+                    if (state.onboarding) {
+                      return;
+                    }
+                    state.applySettings({
+                      ...state.settings,
+                      chatFocusMode: !state.settings.chatFocusMode,
+                    });
+                  },
+                  onChatScroll: (event) => state.handleChatScroll(event),
+                  onDraftChange: (next) => (state.chatMessage = next),
+                  attachments: state.chatAttachments,
+                  onAttachmentsChange: (next) => (state.chatAttachments = next),
+                  onSend: () => state.handleSendChat(),
+                  canAbort: Boolean(state.chatRunId),
+                  onAbort: () => void state.handleAbortChat(),
+                  onQueueRemove: (id) => state.removeQueuedMessage(id),
+                  onNewSession: () => state.handleSendChat("/new", { restoreDraft: true }),
+                  showNewMessages: state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
+                  onScrollToBottom: () => state.scrollToBottom(),
+                  sidebarOpen: state.sidebarOpen,
+                  sidebarContent: state.sidebarContent,
+                  sidebarError: state.sidebarError,
+                  splitRatio: state.splitRatio,
+                  onOpenSidebar: (content: string) => state.handleOpenSidebar(content),
+                  onCloseSidebar: () => state.handleCloseSidebar(),
+                  onSplitRatioChange: (ratio: number) => state.handleSplitRatioChange(ratio),
+                  assistantName: state.assistantName,
+                  assistantAvatar: state.assistantAvatar,
+                  onNavigateToDashboard: () =>
+                    (state as unknown as { navigateToDashboard: () => void }).navigateToDashboard(),
+                  onLogout: () =>
+                    void (
+                      state as unknown as { handleFanClawLogout: () => Promise<void> }
+                    ).handleFanClawLogout(),
+                })
             : nothing
         }
 

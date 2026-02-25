@@ -22,6 +22,7 @@ export type Tab =
   | "skills"
   | "nodes"
   | "chat"
+  | "fanchat"
   | "config"
   | "debug"
   | "logs";
@@ -37,6 +38,7 @@ const TAB_PATHS: Record<Tab, string> = {
   skills: "/skills",
   nodes: "/nodes",
   chat: "/chat",
+  fanchat: "/fanchat",
   config: "/config",
   debug: "/debug",
   logs: "/logs",
@@ -128,6 +130,8 @@ export function iconForTab(tab: Tab): IconName {
     case "agents":
       return "folder";
     case "chat":
+      return "messageSquare";
+    case "fanchat":
       return "messageSquare";
     case "overview":
       return "barChart";
